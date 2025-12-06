@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Si Cantik</title>
+
+<!-- jsPDF & html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* ============================================================
+   GLOBAL
+============================================================ */
+* { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", sans-serif; }
+body { background:#0a1a33; color:white; transition:.4s; overflow-x:hidden; scroll-behavior:smooth; }
+body.light { background:#f4f7ff; color:#0a1a33; }
+
+/* ============================================================
+   NAVBAR
+============================================================ */
+.navbar {
+    position: fixed;
+    top:-80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,0.10);
+    backdrop-filter:blur(12px);
+    padding:12px 25px;
+    border-radius:50px;
+    display:flex;
+    gap:25px;
+    z-index:9999;
+    border:1px solid rgba(255,255,255,0.25);
+    box-shadow:0 0 15px rgba(255,255,255,0.08);
+    transition:.7s ease;
+}
+.navbar.show { top:20px; }
+.navbar a {
+    color:white; font-weight:600; text-decoration:none; position:relative; transition:.3s;
+}
+.navbar a:hover { color:#7bb4ff; text-shadow:0 0 10px rgba(120,165,255,0.6); }
+.navbar a.active::after {
+    content:"";
+    position:absolute;
+    left:0; bottom:-4px;
+    width:100%;
+    height:2px;
+    background:#7bb4ff;
+    animation:slideBounce .4s forwards;
+}
+@keyframes slideBounce {0%{transform:scaleX(0);}60%{transform:scaleX(1.2);}100%{transform:scaleX(1);}}
+
+/* ============================================================
+   HEADER
+============================================================ */
+.header { 
+    text-align:center; 
+    padding:120px 20px 80px; 
+    position:relative;
+    overflow:hidden;
+}
+.profile-img {
+    width:150px; height:150px; border-radius:50%; object-fit:cover;
+    border:4px solid #7bb4ff; box-shadow:0 0 25px rgba(120,165,255,0.5);
+    transition:.3s;
+    animation: floatUpDown 3.5s ease-in-out infinite;
+}
+.profile-img:hover { box-shadow:0 0 35px rgba(120,165,255,0.9); transform: scale(1.05); }
+
+button {
+    padding:10px 18px; margin:5px; border:none; border-radius:8px;
+    background:#7bb4ff; color:#0a1a33; font-weight:700; cursor:pointer; transition:.3s;
+}
+button:hover { box-shadow:0 0 10px #7bb4ff; transform: translateY(-3px); }
+body.light button { background:#0a3d85; color:white; }
+
+/* ============================================================
+   WAVES BACKGROUND
+============================================================ */
+.wave-container {
+    position:absolute;
+    bottom:0; left:0; width:200%; height:150px; overflow:hidden; z-index:-1;
+}
+.wave {
+    position:absolute;
+    width:200%; height:150px; background:rgba(123,180,255,0.1); border-radius:100%;
+    bottom:0; animation: waveMove 20s linear infinite;
+}
+.wave:nth-child(2){opacity:0.15; animation-duration:25s;}
+.wave:nth-child(3){opacity:0.08; animation-duration:30s;}
+@keyframes waveMove { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+@keyframes floatUpDown { 0%{transform:translateY(0);}50%{transform:translateY(-12px);}100%{transform:translateY(0);} }
+
+/* ============================================================
+   SOCIAL ICONS
+============================================================ */
+.social-icons { margin-top:20px; display:flex; justify-content:center; gap:12px; }
+.social-icons a {
+    width:40px; height:40px; background:rgba(255,255,255,0.15);
+    display:flex; justify-content:center; align-items:center; border-radius:50%; font-size:20px; transition:.3s;
+}
+.social-icons a:hover { background:#7bb4ff; color:#0a1a33; transform:scale(1.2); box-shadow:0 0 12px #7bb4ff; }
+
+/* ============================================================
+   CONTAINER & BOX
+============================================================ */
+.container { width:80%; margin:40px auto; }
+.box {
+    background:rgba(255,255,255,0.1); padding:25px; border-radius:15px;
+    margin-bottom:25px; backdrop-filter:blur(8px); transition:.3s;
+    opacity:0; transform: translateY(40px);
+}
+.box:hover { box-shadow:0 0 20px rgba(120,165,255,0.3); }
+.box.show { opacity:1; transform: translateY(0); transition: all 0.8s ease-out; }
+body.light .box { background:rgba(10,58,130,0.12); }
+.box h2 { color:#7bb4ff; margin-bottom:10px; }
+
+/* ============================================================
+   SKILL SECTION
+============================================================ */
+.skill { margin-bottom:20px; font-weight:600; }
+.skill-percent { margin-left:5px; display:inline-block; min-width:35px; }
+.skill-bar {
+    width:100%; height:18px; background:rgba(255,255,255,0.2); border-radius:10px;
+    overflow:hidden; margin-top:5px; cursor:pointer; transition:.3s;
+}
+.skill-bar:hover { transform: scale(1.05); box-shadow:0 0 12px #7bb4ff; }
+.skill-fill {
+    height:100%; width:0%; background:linear-gradient(90deg, #7bb4ff, #a8caff);
+    border-radius:10px; transition: width .2s; box-shadow:0 0 10px rgba(120,165,255,.6);
+}
+
+/* ============================================================
+   CARDS (Pendidikan & Pengalaman) DENGAN GRID
+============================================================ */
+.edu-list, .hobby-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap:15px;
+}
+.edu-item, .hobby-item {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    padding:12px 20px;
+    height:50px;
+    background:rgba(255,255,255,0.15);
+    border-radius:12px;
+    cursor:pointer;
+    transition:.3s;
+    font-size:16px;
+    text-align:left;
+    width:100%;
+    box-sizing:border-box;
+}
+.edu-item:hover, .hobby-item:hover {
+    transform:translateY(-4px) scale(1.05);
+    box-shadow:0 0 15px rgba(120,165,255,0.5);
+}
+
+/* ============================================================
+   CONTACT LINKS
+============================================================ */
+.contact-links {
+    display:flex; flex-wrap:wrap; gap:20px; margin-top:15px; justify-content:flex-start;
+}
+.contact-links a {
+    display:inline-flex; padding:10px 18px;
+    background: rgba(255,255,255,0.15);
+    color:white; border-radius:50px; font-weight:600; text-decoration:none;
+    transition: all 0.3s;
+}
+.contact-links a:hover {
+    background:#7bb4ff; color:#0a1a33;
+    box-shadow:0 0 12px #7bb4ff; transform:translateY(-3px);
+}
+body.light .contact-links a {
+    background: rgba(10,58,130,0.2); color:#0a1a33;
+}
+body.light .contact-links a:hover { background:#0a3d85; color:white; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar" id="navbar">
+    <a href="#profile">Profil</a>
+    <a href="#skills">Skills</a>
+    <a href="#education">Pendidikan</a>
+    <a href="#experience">Pengalaman</a>
+    <a href="#contact">Kontak</a>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhiuX19Ehllge41nc_0sNOIPjfgIObtQCnyus3yBo1UIjy_9PS8KuY2pSsVdXRm7yJr7F646ZJ4V-h8O930XKKUqTjyHyROwtyJ2Ruh3sKYqCe9_4ZA_BxKDah17RdNOQWn5djAW6SkngYCxqslnxJ0sTCGFE5_Gtftx5MLoSJ-L0kirz0dOTdwW6tYxIY/s320/kay%20cantik.jpg" class="profile-img">
+    <h1 id="name">SIAPA YA</h1>
+    <p id="role">ISTRI SYLUS</p>
+
+    <button onclick="editInfo()">Edit Nama</button>
+    <button onclick="toggleMode()">Light / Dark Mode</button>
+
+    <div class="social-icons">
+        <a href="https://instagram.com/loveanddeepspace" target="_blank">📸</a>
+        <a href="https://loveanddeepspace.infoldgames.com/en-EN/home" target="_blank">💼</a>
+        <a href="https://wa.me/+628551000185" target="_blank">☎️</a>
+    </div>
+
+    <div class="wave-container">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+<section class="box" id="profile">
+    <h2>Profil</h2>
+    <p>Perkenalkan, nama saya Herina Zahida, Istri sah Sylus.</p>
+    <p>Saya lahir di Bogor, pada ... November -. Memiliki ketertarikan pada dunia teknologi, khususnya dalam bidang jaringan komputer serta coding.</p><p><br> Saya merasa senang karena dapat mengeksplorasi hal-hal baru, mulai dari mengonfigurasi jaringan, memperbaiki perangkat, menganalisis bagaimana cara kerja kode yg digunakan agar suatu aplikasi dapat berjalan, bahkan memperhatikan kerja aplikasi serta memikirkan bagaimana pengerjaan kode serta databasenya yang membuat aplikasinya bisa berfungsi, hingga memahami cara kerja sistem komputer. Dan saya berharap bisa terus berkembang sampai suatu hari nanti bekerja di bidang IT yang profesional dan bermanfaat bagi banyak orang. </br></p>
+</section>
+
+<section class="box" id="skills">
+    <h2>Keterampilan</h2>
+    <div class="skill">Public Speaking <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="90"></div></div>
+    </div>
+    <div class="skill">Microsoft Office <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="80"></div></div>
+    </div>
+    <div class="skill">Desain Grafis  <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="90"></div></div>
+    </div>
+    <div class="skill">Basic Jaringan  <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="85"></div></div>
+    </div>
+    <div class="skill">Copywriting  <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="90"></div></div>
+    </div>
+    <div class="skill">Coding  <span class="skill-percent">0%</span>
+        <div class="skill-bar"><div class="skill-fill" data-width="87"></div></div>
+    </div>
+</section>
+
+<section class="box" id="education">
+    <h2>Pendidikan</h2>
+    <div class="edu-list">
+        <div class="edu-item">🎓 SD Onychinus</div>
+        <div class="edu-item">🎓 SMP Onychinus 2</div>
+        <div class="edu-item">🎓 SMK Onychinus 3</div>
+        <div class="edu-item">🎓 Universitas Onychinus</div>
+    </div>
+</section>
+
+<section class="box" id="experience">
+    <h2>Pengalaman</h2>
+    <div class="edu-list">
+        <div class="edu-item">💼 Asisten Onychinus N109.  ....</div>
+        <div class="edu-item">💼 Marketing loveanddeepspace ...</div>
+        <div class="edu-item">💼 Asisten Sekretaris loveanddeepspace ...</div>
+        <div class="edu-item">💼 Administrasi loveanddeepspace ...</div>
+    </div>
+</section>
+
+<section class="box" id="contact">
+    <h2>Kontak</h2>
+    <div class="contact-links">
+        <a href="https://instagram.com/loveanddeepspace" target="_blank">📸 Instagram</a>
+        <a href="https://wa.me/+628551000185" target="_blank">📱 WhatsApp</a>
+    </div>
+</section>
+</div>
+
+<script>
+window.addEventListener("load",()=>{ setTimeout(()=>{document.getElementById("navbar").classList.add("show");},300); });
+
+function editInfo(){
+    let n=prompt("Nama baru:", document.getElementById('name').innerText);
+    let r=prompt("Title baru:", document.getElementById('role').innerText);
+    if(n) document.getElementById('name').innerText=n;
+    if(r) document.getElementById('role').innerText=r;
+}
+
+function toggleMode(){ document.body.classList.toggle("light"); }
+
+async function downloadPDF(){
+    const pdf=new jspdf.jsPDF("p","pt","a4");
+    const canvas=await html2canvas(document.body,{scale:2});
+    const img=canvas.toDataURL("image/png");
+    const w=595,h=canvas.height*w/canvas.width;
+    pdf.addImage(img,"PNG",0,0,w,h);
+    pdf.save("CV.pdf");
+}
+
+function animateSkills(){
+    const skills=document.querySelectorAll('.skill');
+    skills.forEach(skill=>{
+        const percentSpan=skill.querySelector('.skill-percent');
+        const fillBar=skill.querySelector('.skill-fill');
+        let target=parseInt(fillBar.dataset.width);
+        let count=0;
+        const interval=setInterval(()=>{
+            if(count<=target){ percentSpan.innerText=count+"%"; fillBar.style.width=count+"%"; count++; }
+            else{ clearInterval(interval); }
+        },18);
+    });
+}
+window.addEventListener("load",animateSkills);
+
+const navLinks=document.querySelectorAll(".navbar a");
+navLinks.forEach(link=>{
+    link.addEventListener("click",(e)=>{
+        e.preventDefault();
+        navLinks.forEach(l=>l.classList.remove("active"));
+        link.classList.add("active");
+        const target=document.querySelector(link.getAttribute("href"));
+        target.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+});
+
+const boxes = document.querySelectorAll('.box');
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting){
+            entry.target.classList.add('show');
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.2 });
+boxes.forEach(box => observer.observe(box));
+</script>
+</body>
+</html>
